@@ -4,3 +4,44 @@ body {
 	background-color: white;
 	font-size: 20px;
 }
+
+h1 {
+	text-align: center;
+}
+
+a {
+	color: #8bb;
+}
+
+img.center {
+	margin: 0 auto;
+	display: block;
+}
+
+p.center {
+	text-align: center;
+}
+
+.toppadding {
+	padding-top: 2em;
+}
+
+#navcontainer ul {
+	padding: .2em 0;
+	margin: 0;
+	width: 100%;
+	text-align: center;
+}
+
+li { 
+	display: inline; 
+}
+
+li a {
+	padding: .2em 1em;
+	border-right: 1px solid #fff;
+}
+
+li a:hover {
+	color: #5aa;
+}
