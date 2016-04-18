@@ -1,4 +1,0 @@
-body { width: 1920px; height: 1848px; background: #000; background-repeat: no-repeat; background-image:url('cp-testpattern.png') }
-#wall { width: 1920px; height: 372px; background: #6699ff; position: absolute; top: 339px; left: 0px; }
-#kiosk { width: 1366px; height: 768px; background: #66ff99; position: absolute; top: 1080px; left: 0px; background-image: url("kioskBackground.jpg")}
-#textHold {padding-top: 200px; padding-left: 80px; color: Gainsboro; font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;}
