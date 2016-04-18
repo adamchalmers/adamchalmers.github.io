@@ -1,0 +1,66 @@
+Elm.Gfx = Elm.Gfx || {};
+Elm.Gfx.make = function (_elm) {
+   "use strict";
+   _elm.Gfx = _elm.Gfx || {};
+   if (_elm.Gfx.values) return _elm.Gfx.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Array = Elm.Array.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Random = Elm.Random.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var _op = {};
+   var fourfold = F3(function (shape,dist,angle) {
+      return A2($Graphics$Collage.rotate,
+      $Basics.degrees(angle),
+      $Graphics$Collage.group(_U.list([A2($Graphics$Collage.move,{ctor: "_Tuple2",_0: 0,_1: dist},shape)
+                                      ,A2($Graphics$Collage.move,{ctor: "_Tuple2",_0: 0,_1: 0 - dist},shape)
+                                      ,A2($Graphics$Collage.move,{ctor: "_Tuple2",_0: dist,_1: 0},shape)
+                                      ,A2($Graphics$Collage.move,{ctor: "_Tuple2",_0: 0 - dist,_1: 0},shape)])));
+   });
+   var genColor = function () {
+      var choices = $Array.fromList(_U.list([$Color.red,$Color.green,$Color.green,$Color.blue,$Color.purple,$Color.orange]));
+      var color = function (i) {    return A2($Maybe.withDefault,$Color.black,A2($Array.get,i,choices));};
+      var n = $Array.length(choices) - 1;
+      return A2($Random.map,color,A2($Random.$int,0,n));
+   }();
+   var genShape = function () {
+      var map = F3(function (color,sides,size) {    return A2($Graphics$Collage.filled,color,A2($Graphics$Collage.ngon,sides,$Basics.toFloat(size)));});
+      return A4($Random.map3,map,genColor,A2($Random.$int,3,8),A2($Random.$int,10,80));
+   }();
+   var ring = F3(function (seed,dist,t) {
+      var _p0 = A2($Random.generate,A2($Random.$int,0,0),seed);
+      var s0 = _p0._1;
+      var _p1 = A2($Random.generate,genShape,s0);
+      var shape = _p1._0;
+      var s1 = _p1._1;
+      var _p2 = A2($Random.generate,A2($Random.$int,dist - 50,dist + 50),s1);
+      var dist = _p2._0;
+      var s2 = _p2._1;
+      var _p3 = A2($Random.generate,A2($Random.$int,0,90),s2);
+      var angle = _p3._0;
+      var s3 = _p3._1;
+      var rotation = $Basics.toFloat(angle) + $Time.inMilliseconds(t) / 100;
+      return {ctor: "_Tuple2",_0: A3(fourfold,shape,$Basics.toFloat(dist),rotation),_1: s3};
+   });
+   var rings = F2(function (seed,t) {
+      var _p4 = A2($Random.generate,A2($Random.$int,101,201),seed);
+      var s0 = _p4._1;
+      var _p5 = A3(ring,s0,250,t);
+      var ring1 = _p5._0;
+      var s1 = _p5._1;
+      var _p6 = A3(ring,s1,150,t);
+      var ring2 = _p6._0;
+      var s2 = _p6._1;
+      return {ctor: "_Tuple2",_0: $Graphics$Collage.group(_U.list([ring1,ring2])),_1: s2};
+   });
+   var canvas = function () {    var width = 800;return A2($Graphics$Collage.collage,width,width);}();
+   return _elm.Gfx.values = {_op: _op,canvas: canvas,rings: rings,ring: ring,genColor: genColor,genShape: genShape,fourfold: fourfold};
+};
