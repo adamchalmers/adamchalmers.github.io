@@ -1564,8 +1564,7 @@ function toString(v)
 	var type = typeof v;
 	if (type === 'function')
 	{
-		var name = v.func ? v.func.name : v.name;
-		return '<function' + (name === '' ? '' : ':') + name + '>';
+		return '<function>';
 	}
 
 	if (type === 'boolean')
@@ -2072,6 +2071,13 @@ var _elm_lang$core$List$sortWith = _elm_lang$core$Native_List.sortWith;
 var _elm_lang$core$List$sortBy = _elm_lang$core$Native_List.sortBy;
 var _elm_lang$core$List$sort = function (xs) {
 	return A2(_elm_lang$core$List$sortBy, _elm_lang$core$Basics$identity, xs);
+};
+var _elm_lang$core$List$singleton = function (value) {
+	return {
+		ctor: '::',
+		_0: value,
+		_1: {ctor: '[]'}
+	};
 };
 var _elm_lang$core$List$drop = F2(
 	function (n, list) {
@@ -3520,15 +3526,8 @@ function setupIncomingPort(name, callback)
 		sentBeforeInit.push(value);
 	}
 
-	function postInitSend(incomingValue)
+	function postInitSend(value)
 	{
-		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
-		if (result.ctor === 'Err')
-		{
-			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
-		}
-
-		var value = result._0;
 		var temp = subs;
 		while (temp.ctor !== '[]')
 		{
@@ -3539,7 +3538,13 @@ function setupIncomingPort(name, callback)
 
 	function send(incomingValue)
 	{
-		currentSend(incomingValue);
+		var result = A2(_elm_lang$core$Json_Decode$decodeValue, converter, incomingValue);
+		if (result.ctor === 'Err')
+		{
+			throw new Error('Trying to send an unexpected type of value through port `' + name + '`:\n' + result._0);
+		}
+
+		currentSend(result._0);
 	}
 
 	return { send: send };
@@ -4160,7 +4165,7 @@ function endsWith(sub, str)
 function indexes(sub, str)
 {
 	var subLen = sub.length;
-	
+
 	if (subLen < 1)
 	{
 		return _elm_lang$core$Native_List.Nil;
@@ -4173,74 +4178,78 @@ function indexes(sub, str)
 	{
 		is.push(i);
 		i = i + subLen;
-	}	
-	
+	}
+
 	return _elm_lang$core$Native_List.fromArray(is);
 }
+
 
 function toInt(s)
 {
 	var len = s.length;
+
+	// if empty
 	if (len === 0)
 	{
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+		return intErr(s);
 	}
-	var start = 0;
-	if (s[0] === '-')
+
+	// if hex
+	var c = s[0];
+	if (c === '0' && s[1] === 'x')
 	{
-		if (len === 1)
+		for (var i = 2; i < len; ++i)
 		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+			var c = s[i];
+			if (('0' <= c && c <= '9') || ('A' <= c && c <= 'F') || ('a' <= c && c <= 'f'))
+			{
+				continue;
+			}
+			return intErr(s);
 		}
-		start = 1;
+		return _elm_lang$core$Result$Ok(parseInt(s, 16));
 	}
-	for (var i = start; i < len; ++i)
+
+	// is decimal
+	if (c > '9' || (c < '0' && c !== '-' && c !== '+'))
+	{
+		return intErr(s);
+	}
+	for (var i = 1; i < len; ++i)
 	{
 		var c = s[i];
 		if (c < '0' || '9' < c)
 		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int" );
+			return intErr(s);
 		}
 	}
+
 	return _elm_lang$core$Result$Ok(parseInt(s, 10));
 }
 
+function intErr(s)
+{
+	return _elm_lang$core$Result$Err("could not convert string '" + s + "' to an Int");
+}
+
+
 function toFloat(s)
 {
-	var len = s.length;
-	if (len === 0)
+	// check if it is a hex, octal, or binary number
+	if (s.length === 0 || /[\sxbo]/.test(s))
 	{
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
+		return floatErr(s);
 	}
-	var start = 0;
-	if (s[0] === '-')
-	{
-		if (len === 1)
-		{
-			return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
-		}
-		start = 1;
-	}
-	var dotCount = 0;
-	for (var i = start; i < len; ++i)
-	{
-		var c = s[i];
-		if ('0' <= c && c <= '9')
-		{
-			continue;
-		}
-		if (c === '.')
-		{
-			dotCount += 1;
-			if (dotCount <= 1)
-			{
-				continue;
-			}
-		}
-		return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float" );
-	}
-	return _elm_lang$core$Result$Ok(parseFloat(s));
+	var n = +s;
+	// faster isNaN check
+	return n === n ? _elm_lang$core$Result$Ok(n) : floatErr(s);
 }
+
+function floatErr(s)
+{
+	return _elm_lang$core$Result$Err("could not convert string '" + s + "' to a Float");
+}
+
 
 function toList(str)
 {
@@ -5695,11 +5704,6 @@ function badToString(problem)
 				problem = problem.rest;
 				break;
 
-			case 'index':
-				context += '[' + problem.index + ']';
-				problem = problem.rest;
-				break;
-
 			case 'oneOf':
 				var problems = problem.problems;
 				for (var i = 0; i < problems.length; i++)
@@ -6996,9 +7000,9 @@ function on(name, options, decoder)
 
 function equalEvents(a, b)
 {
-	if (!a.options === b.options)
+	if (a.options !== b.options)
 	{
-		if (a.stopPropagation !== b.stopPropagation || a.preventDefault !== b.preventDefault)
+		if (a.options.stopPropagation !== b.options.stopPropagation || a.options.preventDefault !== b.options.preventDefault)
 		{
 			return false;
 		}
@@ -8274,7 +8278,7 @@ function normalRenderer(parentNode, view)
 var rAF =
 	typeof requestAnimationFrame !== 'undefined'
 		? requestAnimationFrame
-		: function(callback) { callback(); };
+		: function(callback) { setTimeout(callback, 1000 / 60); };
 
 function makeStepper(domNode, view, initialVirtualNode, eventNode)
 {
@@ -9248,12 +9252,516 @@ var _elm_lang$window$Window$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Window'] = {pkg: 'elm-lang/window', init: _elm_lang$window$Window$init, onEffects: _elm_lang$window$Window$onEffects, onSelfMsg: _elm_lang$window$Window$onSelfMsg, tag: 'sub', subMap: _elm_lang$window$Window$subMap};
 
-var _user$project$Counter$textFor = function (n) {
-	return (_elm_lang$core$Native_Utils.cmp(n, 0) > 0) ? _elm_lang$core$Basics$toString(n) : '0';
+var _user$project$SevenSeg$pixels = function (number) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_elm_lang$core$Basics$toString(number),
+		'px');
 };
+var _user$project$SevenSeg$segmentStyle = F3(
+	function (orientation, style, state) {
+		var segmentWidth = _elm_lang$core$Basics$toFloat(
+			_elm_lang$core$Basics$ceiling(style.height / 16));
+		return {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'display', _1: 'inline-block'},
+			_1: {
+				ctor: '::',
+				_0: function () {
+					var _p0 = orientation;
+					if (_p0.ctor === 'Horizontal') {
+						return {
+							ctor: '_Tuple2',
+							_0: 'height',
+							_1: _user$project$SevenSeg$pixels(segmentWidth)
+						};
+					} else {
+						return {
+							ctor: '_Tuple2',
+							_0: 'height',
+							_1: _user$project$SevenSeg$pixels(((style.height - (segmentWidth * 3)) / 2) - 2)
+						};
+					}
+				}(),
+				_1: {
+					ctor: '::',
+					_0: function () {
+						var _p1 = orientation;
+						if (_p1.ctor === 'Horizontal') {
+							return {
+								ctor: '_Tuple2',
+								_0: 'width',
+								_1: _user$project$SevenSeg$pixels(style.width - (4 * segmentWidth))
+							};
+						} else {
+							return {
+								ctor: '_Tuple2',
+								_0: 'width',
+								_1: _user$project$SevenSeg$pixels(segmentWidth)
+							};
+						}
+					}(),
+					_1: {
+						ctor: '::',
+						_0: function () {
+							var _p2 = state;
+							if (_p2.ctor === 'On') {
+								return {ctor: '_Tuple2', _0: 'background-color', _1: style.colour};
+							} else {
+								return {ctor: '_Tuple2', _0: 'background-color', _1: '#080808'};
+							}
+						}(),
+						_1: {
+							ctor: '::',
+							_0: function () {
+								var _p3 = orientation;
+								if (_p3.ctor === 'Horizontal') {
+									return {
+										ctor: '_Tuple2',
+										_0: 'margin',
+										_1: _user$project$SevenSeg$pixels(0)
+									};
+								} else {
+									return {
+										ctor: '_Tuple2',
+										_0: 'margin',
+										_1: _user$project$SevenSeg$pixels(1)
+									};
+								}
+							}(),
+							_1: {
+								ctor: '::',
+								_0: function () {
+									var _p4 = state;
+									if (_p4.ctor === 'On') {
+										return {
+											ctor: '_Tuple2',
+											_0: 'box-shadow',
+											_1: A2(_elm_lang$core$Basics_ops['++'], '0px 0px 4px 1.5px ', style.colour)
+										};
+									} else {
+										return {ctor: '_Tuple2', _0: 'box-shadow', _1: 'none'};
+									}
+								}(),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}
+		};
+	});
+var _user$project$SevenSeg$segment = F3(
+	function (orientation, segStyle, state) {
+		var _p5 = orientation;
+		if (_p5.ctor === 'Horizontal') {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						A3(_user$project$SevenSeg$segmentStyle, orientation, segStyle, state)),
+					_1: {ctor: '[]'}
+				},
+				{ctor: '[]'});
+		} else {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$style(
+						A3(_user$project$SevenSeg$segmentStyle, orientation, segStyle, state)),
+					_1: {ctor: '[]'}
+				},
+				{ctor: '[]'});
+		}
+	});
+var _user$project$SevenSeg$sevenSegStyle = function (style) {
+	return {
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'display', _1: 'inline-block'},
+		_1: {
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'height',
+				_1: _user$project$SevenSeg$pixels(style.height)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'width',
+					_1: _user$project$SevenSeg$pixels(style.width)
+				},
+				_1: {ctor: '[]'}
+			}
+		}
+	};
+};
+var _user$project$SevenSeg$Style = F3(
+	function (a, b, c) {
+		return {width: a, height: b, colour: c};
+	});
+var _user$project$SevenSeg$Vertical = {ctor: 'Vertical'};
+var _user$project$SevenSeg$Horizontal = {ctor: 'Horizontal'};
+var _user$project$SevenSeg$Off = {ctor: 'Off'};
+var _user$project$SevenSeg$On = {ctor: 'On'};
+var _user$project$SevenSeg$sevenSegA = F2(
+	function (style, number) {
+		return A3(
+			_user$project$SevenSeg$segment,
+			_user$project$SevenSeg$Horizontal,
+			style,
+			function () {
+				var _p6 = number;
+				switch (_p6) {
+					case 1:
+						return _user$project$SevenSeg$Off;
+					case 2:
+						return _user$project$SevenSeg$On;
+					case 3:
+						return _user$project$SevenSeg$On;
+					case 4:
+						return _user$project$SevenSeg$Off;
+					case 5:
+						return _user$project$SevenSeg$On;
+					case 6:
+						return _user$project$SevenSeg$On;
+					case 7:
+						return _user$project$SevenSeg$On;
+					case 8:
+						return _user$project$SevenSeg$On;
+					case 9:
+						return _user$project$SevenSeg$On;
+					default:
+						return _user$project$SevenSeg$Off;
+				}
+			}());
+	});
+var _user$project$SevenSeg$sevenSegB = F2(
+	function (style, number) {
+		return A3(
+			_user$project$SevenSeg$segment,
+			_user$project$SevenSeg$Vertical,
+			style,
+			function () {
+				var _p7 = number;
+				switch (_p7) {
+					case 1:
+						return _user$project$SevenSeg$Off;
+					case 2:
+						return _user$project$SevenSeg$Off;
+					case 3:
+						return _user$project$SevenSeg$Off;
+					case 4:
+						return _user$project$SevenSeg$On;
+					case 5:
+						return _user$project$SevenSeg$On;
+					case 6:
+						return _user$project$SevenSeg$On;
+					case 7:
+						return _user$project$SevenSeg$Off;
+					case 8:
+						return _user$project$SevenSeg$On;
+					case 9:
+						return _user$project$SevenSeg$On;
+					default:
+						return _user$project$SevenSeg$Off;
+				}
+			}());
+	});
+var _user$project$SevenSeg$sevenSegC = F2(
+	function (style, number) {
+		return A3(
+			_user$project$SevenSeg$segment,
+			_user$project$SevenSeg$Vertical,
+			style,
+			function () {
+				var _p8 = number;
+				switch (_p8) {
+					case 1:
+						return _user$project$SevenSeg$On;
+					case 2:
+						return _user$project$SevenSeg$On;
+					case 3:
+						return _user$project$SevenSeg$On;
+					case 4:
+						return _user$project$SevenSeg$On;
+					case 5:
+						return _user$project$SevenSeg$Off;
+					case 6:
+						return _user$project$SevenSeg$Off;
+					case 7:
+						return _user$project$SevenSeg$On;
+					case 8:
+						return _user$project$SevenSeg$On;
+					case 9:
+						return _user$project$SevenSeg$On;
+					default:
+						return _user$project$SevenSeg$Off;
+				}
+			}());
+	});
+var _user$project$SevenSeg$sevenSegD = F2(
+	function (style, number) {
+		return A3(
+			_user$project$SevenSeg$segment,
+			_user$project$SevenSeg$Horizontal,
+			style,
+			function () {
+				var _p9 = number;
+				switch (_p9) {
+					case 1:
+						return _user$project$SevenSeg$Off;
+					case 2:
+						return _user$project$SevenSeg$On;
+					case 3:
+						return _user$project$SevenSeg$On;
+					case 4:
+						return _user$project$SevenSeg$On;
+					case 5:
+						return _user$project$SevenSeg$On;
+					case 6:
+						return _user$project$SevenSeg$On;
+					case 7:
+						return _user$project$SevenSeg$Off;
+					case 8:
+						return _user$project$SevenSeg$On;
+					case 9:
+						return _user$project$SevenSeg$On;
+					default:
+						return _user$project$SevenSeg$Off;
+				}
+			}());
+	});
+var _user$project$SevenSeg$sevenSegE = F2(
+	function (style, number) {
+		return A3(
+			_user$project$SevenSeg$segment,
+			_user$project$SevenSeg$Vertical,
+			style,
+			function () {
+				var _p10 = number;
+				switch (_p10) {
+					case 1:
+						return _user$project$SevenSeg$Off;
+					case 2:
+						return _user$project$SevenSeg$On;
+					case 3:
+						return _user$project$SevenSeg$Off;
+					case 4:
+						return _user$project$SevenSeg$Off;
+					case 5:
+						return _user$project$SevenSeg$Off;
+					case 6:
+						return _user$project$SevenSeg$On;
+					case 7:
+						return _user$project$SevenSeg$Off;
+					case 8:
+						return _user$project$SevenSeg$On;
+					case 9:
+						return _user$project$SevenSeg$Off;
+					default:
+						return _user$project$SevenSeg$Off;
+				}
+			}());
+	});
+var _user$project$SevenSeg$sevenSegF = F2(
+	function (style, number) {
+		return A3(
+			_user$project$SevenSeg$segment,
+			_user$project$SevenSeg$Vertical,
+			style,
+			function () {
+				var _p11 = number;
+				switch (_p11) {
+					case 1:
+						return _user$project$SevenSeg$On;
+					case 2:
+						return _user$project$SevenSeg$Off;
+					case 3:
+						return _user$project$SevenSeg$On;
+					case 4:
+						return _user$project$SevenSeg$On;
+					case 5:
+						return _user$project$SevenSeg$On;
+					case 6:
+						return _user$project$SevenSeg$On;
+					case 7:
+						return _user$project$SevenSeg$On;
+					case 8:
+						return _user$project$SevenSeg$On;
+					case 9:
+						return _user$project$SevenSeg$On;
+					default:
+						return _user$project$SevenSeg$Off;
+				}
+			}());
+	});
+var _user$project$SevenSeg$sevenSegG = F2(
+	function (style, number) {
+		return A3(
+			_user$project$SevenSeg$segment,
+			_user$project$SevenSeg$Horizontal,
+			style,
+			function () {
+				var _p12 = number;
+				switch (_p12) {
+					case 1:
+						return _user$project$SevenSeg$Off;
+					case 2:
+						return _user$project$SevenSeg$On;
+					case 3:
+						return _user$project$SevenSeg$On;
+					case 4:
+						return _user$project$SevenSeg$Off;
+					case 5:
+						return _user$project$SevenSeg$On;
+					case 6:
+						return _user$project$SevenSeg$On;
+					case 7:
+						return _user$project$SevenSeg$Off;
+					case 8:
+						return _user$project$SevenSeg$On;
+					case 9:
+						return _user$project$SevenSeg$On;
+					default:
+						return _user$project$SevenSeg$Off;
+				}
+			}());
+	});
+var _user$project$SevenSeg$sevenSeg = F4(
+	function (width, height, colour, number) {
+		var verticalStyle = {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'justify-content', _1: 'space-between'},
+				_1: {ctor: '[]'}
+			}
+		};
+		var horizontalStyle = {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'display', _1: 'flex'},
+			_1: {
+				ctor: '::',
+				_0: {ctor: '_Tuple2', _0: 'justify-content', _1: 'center'},
+				_1: {ctor: '[]'}
+			}
+		};
+		var segStyle = {width: width, height: height, colour: colour};
+		return A2(
+			_elm_lang$html$Html$div,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$style(
+					_user$project$SevenSeg$sevenSegStyle(segStyle)),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$style(horizontalStyle),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(_user$project$SevenSeg$sevenSegA, segStyle, number),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$style(verticalStyle),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: A2(_user$project$SevenSeg$sevenSegB, segStyle, number),
+							_1: {
+								ctor: '::',
+								_0: A2(_user$project$SevenSeg$sevenSegC, segStyle, number),
+								_1: {ctor: '[]'}
+							}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$style(horizontalStyle),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: A2(_user$project$SevenSeg$sevenSegD, segStyle, number),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$style(verticalStyle),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: A2(_user$project$SevenSeg$sevenSegE, segStyle, number),
+									_1: {
+										ctor: '::',
+										_0: A2(_user$project$SevenSeg$sevenSegF, segStyle, number),
+										_1: {ctor: '[]'}
+									}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$style(horizontalStyle),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: A2(_user$project$SevenSeg$sevenSegG, segStyle, number),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			});
+	});
+
 var _user$project$Counter$view = function (model) {
-	return _elm_lang$html$Html$text(
-		_user$project$Counter$textFor(model.num));
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A4(_user$project$SevenSeg$sevenSeg, model.fontSize * 0.7, model.fontSize, model.color, model.num),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		});
 };
 var _user$project$Counter$update = F2(
 	function (msg, model) {
@@ -9266,12 +9774,13 @@ var _user$project$Counter$update = F2(
 				start: _p1
 			}) : model;
 	});
-var _user$project$Counter$init = function (period) {
-	return {num: -1, limit: 10, period: period, start: 0};
-};
-var _user$project$Counter$Model = F4(
-	function (a, b, c, d) {
-		return {num: a, limit: b, period: c, start: d};
+var _user$project$Counter$init = F2(
+	function (fontSize, period) {
+		return {num: -1, limit: 10, color: 'rgb(50,100,255)', period: period, fontSize: fontSize, start: 0};
+	});
+var _user$project$Counter$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {num: a, limit: b, color: c, period: d, start: e, fontSize: f};
 	});
 var _user$project$Counter$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
@@ -9294,11 +9803,10 @@ var _user$project$CounterGrid$globals = function () {
 			_elm_lang$core$Basics_ops['++'],
 			_elm_lang$core$Basics$toString(tdPx),
 			'px'),
-		fontSize: '1.5em',
+		textSize: 16,
 		border: '0px solid gray',
 		w: 40,
-		h: 24,
-		color: 'rgb(50,100,255)'
+		h: 24
 	};
 }();
 var _user$project$CounterGrid$tdStyle = _elm_lang$html$Html_Attributes$style(
@@ -9308,32 +9816,23 @@ var _user$project$CounterGrid$tdStyle = _elm_lang$html$Html_Attributes$style(
 		_1: {
 			ctor: '::',
 			_0: {ctor: '_Tuple2', _0: 'height', _1: _user$project$CounterGrid$globals.tdSize},
+			_1: {ctor: '[]'}
+		}
+	});
+var _user$project$CounterGrid$tableStyle = _elm_lang$html$Html_Attributes$style(
+	{
+		ctor: '::',
+		_0: {ctor: '_Tuple2', _0: 'background', _1: 'black'},
+		_1: {
+			ctor: '::',
+			_0: {ctor: '_Tuple2', _0: 'border', _1: _user$project$CounterGrid$globals.border},
 			_1: {
 				ctor: '::',
-				_0: {ctor: '_Tuple2', _0: 'font-size', _1: _user$project$CounterGrid$globals.fontSize},
-				_1: {
-					ctor: '::',
-					_0: {ctor: '_Tuple2', _0: 'font-weight', _1: 'bold'},
-					_1: {ctor: '[]'}
-				}
+				_0: {ctor: '_Tuple2', _0: 'margin', _1: '0 auto'},
+				_1: {ctor: '[]'}
 			}
 		}
 	});
-var _user$project$CounterGrid$classOf = function (counter) {
-	return (_elm_lang$core$Native_Utils.cmp(counter.num, 0) > 0) ? {
-		ctor: '::',
-		_0: _user$project$CounterGrid$tdStyle,
-		_1: {ctor: '[]'}
-	} : {
-		ctor: '::',
-		_0: _user$project$CounterGrid$tdStyle,
-		_1: {
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$class('noglow'),
-			_1: {ctor: '[]'}
-		}
-	};
-};
 var _user$project$CounterGrid$Model = F3(
 	function (a, b, c) {
 		return {counters: a, cols: b, rows: c};
@@ -9385,7 +9884,7 @@ var _user$project$CounterGrid$update = F2(
 								A2(
 									_elm_lang$core$Array$map,
 									function (p) {
-										return _user$project$Counter$init(p);
+										return A2(_user$project$Counter$init, _user$project$CounterGrid$globals.textSize, p);
 									},
 									_elm_lang$core$Array$fromList(_p0._0)))
 						}),
@@ -9422,7 +9921,11 @@ var _user$project$CounterGrid$viewTable = function (model) {
 		var cellFor = function (counter) {
 			return A2(
 				_elm_lang$html$Html$td,
-				_user$project$CounterGrid$classOf(counter),
+				{
+					ctor: '::',
+					_0: _user$project$CounterGrid$tdStyle,
+					_1: {ctor: '[]'}
+				},
 				{
 					ctor: '::',
 					_0: A2(
@@ -9454,7 +9957,7 @@ var _user$project$CounterGrid$viewTable = function (model) {
 					_elm_lang$html$Html$table,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('glow'),
+						_0: _user$project$CounterGrid$tableStyle,
 						_1: {ctor: '[]'}
 					},
 					A2(
