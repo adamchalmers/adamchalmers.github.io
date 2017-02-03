@@ -1,0 +1,43 @@
+body {
+    font-family: sans-serif;
+    font-size: 14px;
+}
+
+button {
+    font-size: 14px;
+}
+
+td {
+    border: 1px solid lightgray;
+    width: 10px;
+    height: 10px;
+}
+
+.dead {
+    background: white;
+}
+
+.live {
+    background: black;
+}
+
+.buttons {
+    margin: 0 auto;
+}
+
+#cellautogrid {
+    margin: 0 auto;
+}
+
+#controls {
+    width: 300px;
+    border: 1px solid lightgrey;
+    display: block;
+}
+
+#footer {
+    position: absolute;
+    bottom: 1px;
+    right: 5px;
+    font-size: small;
+}
