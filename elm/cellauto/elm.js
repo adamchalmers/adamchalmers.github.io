@@ -8811,7 +8811,15 @@ var _user$project$GameOfLife$pickleCell = function (cell) {
 		return 'D';
 	}
 };
-var _user$project$GameOfLife$_p1 = {
+var _user$project$GameOfLife$cssClass = function (cell) {
+	var _p1 = cell;
+	if (_p1.ctor === 'Live') {
+		return 'live';
+	} else {
+		return 'dead';
+	}
+};
+var _user$project$GameOfLife$_p2 = {
 	ctor: '_Tuple2',
 	_0: _elm_lang$core$Set$fromList(
 		{
@@ -8830,24 +8838,21 @@ var _user$project$GameOfLife$_p1 = {
 			_1: {ctor: '[]'}
 		})
 };
-var _user$project$GameOfLife$survive = _user$project$GameOfLife$_p1._0;
-var _user$project$GameOfLife$born = _user$project$GameOfLife$_p1._1;
+var _user$project$GameOfLife$survive = _user$project$GameOfLife$_p2._0;
+var _user$project$GameOfLife$born = _user$project$GameOfLife$_p2._1;
 var _user$project$GameOfLife$Dead = {ctor: 'Dead'};
 var _user$project$GameOfLife$defaultCell = _user$project$GameOfLife$Dead;
 var _user$project$GameOfLife$Live = {ctor: 'Live'};
 var _user$project$GameOfLife$onClick = function (c) {
-	var _p2 = c;
-	if (_p2.ctor === 'Live') {
+	var _p3 = c;
+	if (_p3.ctor === 'Live') {
 		return _user$project$GameOfLife$Dead;
 	} else {
 		return _user$project$GameOfLife$Live;
 	}
 };
-var _user$project$GameOfLife$cssClass = function (cell) {
-	return _elm_lang$core$Native_Utils.eq(cell, _user$project$GameOfLife$Live) ? 'live' : 'dead';
-};
-var _user$project$GameOfLife$initBoard = function (_p3) {
-	var _p4 = _p3;
+var _user$project$GameOfLife$initBoard = function (_p4) {
+	var _p5 = _p4;
 	var startCells = _elm_lang$core$Set$fromList(
 		{
 			ctor: '::',
@@ -8900,33 +8905,29 @@ var _user$project$GameOfLife$initBoard = function (_p3) {
 		});
 	return A2(
 		_elm_lang$core$Set$member,
-		{ctor: '_Tuple2', _0: _p4._0, _1: _p4._1},
+		{ctor: '_Tuple2', _0: _p5._0, _1: _p5._1},
 		startCells) ? _user$project$GameOfLife$Live : _user$project$GameOfLife$Dead;
 };
 var _user$project$GameOfLife$evolveCell = F2(
 	function (cell, neighs) {
-		var count = function (val) {
-			return _elm_lang$core$List$length(
-				A2(
-					_elm_lang$core$List$filter,
-					F2(
-						function (x, y) {
-							return _elm_lang$core$Native_Utils.eq(x, y);
-						})(val),
-					neighs));
-		};
-		var numDead = count(_user$project$GameOfLife$Dead);
-		var numLive = count(_user$project$GameOfLife$Live);
-		var _p5 = cell;
-		if (_p5.ctor === 'Live') {
+		var numLive = _elm_lang$core$List$length(
+			A2(
+				_elm_lang$core$List$filter,
+				F2(
+					function (x, y) {
+						return _elm_lang$core$Native_Utils.eq(x, y);
+					})(_user$project$GameOfLife$Live),
+				neighs));
+		var _p6 = cell;
+		if (_p6.ctor === 'Live') {
 			return A2(_elm_lang$core$Set$member, numLive, _user$project$GameOfLife$survive) ? _user$project$GameOfLife$Live : _user$project$GameOfLife$Dead;
 		} else {
 			return A2(_elm_lang$core$Set$member, numLive, _user$project$GameOfLife$born) ? _user$project$GameOfLife$Live : _user$project$GameOfLife$Dead;
 		}
 	});
 var _user$project$GameOfLife$unpickleCell = function (str) {
-	var _p6 = str;
-	switch (_p6) {
+	var _p7 = str;
+	switch (_p7) {
 		case 'L':
 			return _user$project$GameOfLife$Live;
 		case 'D':
@@ -9845,45 +9846,49 @@ var _user$project$Main$cellGridRows = function (grid) {
 var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$id('container'),
+			_1: {ctor: '[]'}
+		},
 		{
 			ctor: '::',
 			_0: A2(
 				_elm_lang$html$Html$table,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$id('controls'),
+					_0: _elm_lang$html$Html_Attributes$id('cellautogrid'),
 					_1: {ctor: '[]'}
 				},
-				{
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$tr,
-						{ctor: '[]'},
-						_user$project$Main$buttonsFor(model)),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$tr,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: _user$project$Main$codeLoadSaveGui(model),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}),
+				_user$project$Main$cellGridRows(model.cellgrid)),
 			_1: {
 				ctor: '::',
 				_0: A2(
 					_elm_lang$html$Html$table,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$id('cellautogrid'),
+						_0: _elm_lang$html$Html_Attributes$id('controls'),
 						_1: {ctor: '[]'}
 					},
-					_user$project$Main$cellGridRows(model.cellgrid)),
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$tr,
+							{ctor: '[]'},
+							_user$project$Main$buttonsFor(model)),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$tr,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _user$project$Main$codeLoadSaveGui(model),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
+					}),
 				_1: {
 					ctor: '::',
 					_0: A2(
