@@ -3,14 +3,12 @@ body {
 	background-image: url('tile.jpg');
 	background-color: white;
 	font-size: 20px;
+	font-weight: lighter;
 }
 
 h1 {
 	text-align: center;
-}
-
-a {
-	color: #8bb;
+	font-weight: normal;
 }
 
 div.face {
@@ -26,8 +24,18 @@ div.face {
 }
 
 p {
-	text-align: center;
-	padding-top: 2em;
+	padding-top: 1em;
+}
+
+a {
+	color: #666;
+	text-decoration-line: underline;
+	text-decoration-style: dotted;
+}
+
+.bio {
+	max-width: 600px;
+	margin: 0 auto;
 }
 
 .navcontainer ul {
@@ -35,17 +43,9 @@ p {
 	margin: 0;
 	width: 100%;
 	text-align: center;
+	bottom: 20px;
 }
 
-li { 
-	display: inline; 
-}
-
-
-li a {
-	padding: .2em 1em;
-}
-
-li a:hover {
-	color: #5aa;
+strong {
+	font-weight: normal;
 }
