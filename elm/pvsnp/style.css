@@ -1,0 +1,38 @@
+body {
+    font-family: sans-serif;
+}
+
+h1 {
+    text-align: center;
+}
+
+h2 {
+    text-align: center;
+    color: firebrick;
+}
+
+#container {
+    margin: 40px auto;
+    max-width: 500px;
+    border: 1px dotted grey;
+    padding: 10px;
+}
+
+input {
+    width: 80%;
+}
+
+img {
+    margin: 0 10px 0 0;
+}
+
+a {
+    color: firebrick;
+}
+
+#footer {
+    font-size: 10px;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+}
