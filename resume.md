@@ -7,7 +7,7 @@
 
 ## Selected previous employment
 
-### Software Engineer II, RetailMeNot (2017 - present)
+### Software Engineer II, RetailMeNot (2017 - 2018)
 Worked in iOS native app team. Built new personalized onboarding experience for new users. Redesigned Model-ViewModel system for letting API server change page contents. Refactored 3000 line ObjC AppDelegate into many small Swift AppDelegates linked with a service-oriented architecture. Migrated codebase from CocoaPods to internal frameworks. Designed and implemented app performance monitoring and dashboard.
 
 ### Software Engineering Intern, Freelancer.com (2015 - 2016)
@@ -17,7 +17,10 @@ Worked on Golang infrastructure, restructuring authentication system and adding 
 Worked on Google Drive for Android, adding support for Chromecast playback of video, audio and images. Heavy use of Java and the Android stack.
 
 ### Software Engineering Intern, Google (2013)
-Two internships with Network Tools team. Made software to monitor and visualise Google’s production network. Heavy use of Go, Python and Javascript (including Google’s Closure library).
+Two internships with Network Tools team. Made software to monitor and visualise Google’s production network. Heavy use of Go, Python and Javascript (including Google’s Closure library). Software deployed and still in use by internal teams years later.
+
+### Software Engineer, SeeThrough Studios (2011 - 2012)
+Worked on two games for a Sydney video games startup - Particulars (released on Steam in 2014) and Flatland: Fallen Angle (released for free online in 2012). Worked closely with designers, artists and management to build games in Unity 3D with C#.
 
 ### Tutor, University of Sydney & University of Technology Sydney (2012 - 2016)
 Taught junior and senior IT units including Algorithms, Data Structures, Databases, Formal Languages and Logic, Project Management, Introduction to Programming, Practical Network Security.
@@ -53,3 +56,4 @@ in our best models of rational agents.
  - Down the Swift associated type rabbit hole (2017). Available at https://medium.com/retailmenot-engineering/down-the-swift-associated-type-rabbit-hole-1f41ee6ceaf4
  - An Offer You Can’t (Rationally) Refuse (2016) (research thesis). Available at https://github.com/adamchalmers/philhons/blob/master/thesis.pdf
  - Wide range of articles for university newspaper Honi Soit (2012-2016). Available at http://honisoit.com/author/adam-chalmers/
+ - The Disappearing Women of DriveCo (fiction, 2017). Available at https://hackernoon.com/the-disappearing-driveco-women-32377f982d29
