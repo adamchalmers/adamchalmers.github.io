@@ -11,8 +11,7 @@ h1 {
 	font-weight: normal;
 }
 
-div.face {
-	background-image: url('face.jpg');
+div.image {
 	width:256px;
 	height:256px;
     background-repeat: no-repeat;
@@ -21,6 +20,19 @@ div.face {
     border-radius: 50%;
 	margin: 0 auto;
 	border: 2px solid #233;
+}
+
+.caption {
+	font-size: small;
+	text-align: center;
+}
+
+.face {
+	background-image: url('face.jpg');
+}
+
+.latte {
+	background-image: url('latte.jpg');
 }
 
 p {
