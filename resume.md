@@ -3,7 +3,7 @@
 ## Contact details
 
  - adam.s.chalmers@gmail.com
- - https://adamchalmers.github.io
+ - https://adamchalmers.com
 
 ## Selected previous employment
 
