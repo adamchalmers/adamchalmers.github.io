@@ -7,6 +7,9 @@
 
 ## Selected previous employment
 
+### Systems engineer, Cloudflare (2018 - present)
+Worked on the Argo Tunnel team. Worked in the Go codebase improving the service and shipping TryCloudflare.com to offer users free tunnels without logging in. Built a Rust service for continuously monitoring Argo Tunnels. Also developed web UIs in Elm and Typescript+React. 
+
 ### Software Engineer II, RetailMeNot (2017 - 2018)
 Worked in iOS native app team. Built new personalized onboarding experience for new users. Redesigned Model-ViewModel system for letting API server change page contents. Refactored 3000 line ObjC AppDelegate into many small Swift AppDelegates linked with a service-oriented architecture. Migrated codebase from CocoaPods to internal frameworks. Designed and implemented app performance monitoring and dashboard.
 
@@ -18,9 +21,6 @@ Worked on Google Drive for Android, adding support for Chromecast playback of vi
 
 ### Software Engineering Intern, Google (2013)
 Two internships with Network Tools team. Made software to monitor and visualise Google’s production network. Heavy use of Go, Python and Javascript (including Google’s Closure library). Software deployed and still in use by internal teams years later.
-
-### Software Engineer, SeeThrough Studios (2011 - 2012)
-Worked on two games for a Sydney video games startup - Particulars (released on Steam in 2014) and Flatland: Fallen Angle (released for free online in 2012). Worked closely with designers, artists and management to build games in Unity 3D with C#.
 
 ### Tutor, University of Sydney & University of Technology Sydney (2012 - 2016)
 Taught junior and senior IT units including Algorithms, Data Structures, Databases, Formal Languages and Logic, Project Management, Introduction to Programming, Practical Network Security.
